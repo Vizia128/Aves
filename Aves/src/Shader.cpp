@@ -9,12 +9,22 @@ namespace Aves {
         shaderCode = read_shader_file(shaderPath);
         const char* shaderCodeChar = shaderCode.c_str();
 
-        // vertex shader
-        shaderID = glCreateShader(GL_VERTEX_SHADER);
+        if(shaderType == "VERTEX")
+        {
+            shaderID = glCreateShader(GL_VERTEX_SHADER);
+        }
+        else if (shaderType == "FRAGMENT")
+        {
+            shaderID = glCreateShader(GL_FRAGMENT_SHADER);
+        }
+        else
+        {
+            AVES_WARN("Invalad shader type!");
+        }
+        
         glShaderSource(shaderID, 1, &shaderCodeChar, NULL);
         glCompileShader(shaderID);
         checkCompileErrors(shaderID, shaderType);
-
 	}
 
     void Shader::Init(Shader vertex, Shader fragment)
@@ -92,6 +102,20 @@ namespace Aves {
         ifs.seekg(0, std::ios_base::beg);
 
         return std::string{ std::istreambuf_iterator<char> {ifs}, {} };
+    }
+
+    GLuint Shader::CreateUniformBlock(const char* uniformBlockName, int size) {
+        GLuint UniformBlockIndex = glGetUniformBlockIndex(shaderID, uniformBlockName);
+        glUniformBlockBinding(shaderID, UniformBlockIndex, 0);
+
+        GLuint uboStruct;
+        glGenBuffers(1, &uboStruct);
+        glBindBuffer(GL_UNIFORM_BUFFER, uboStruct);
+        glBufferData(GL_UNIFORM_BUFFER, size, NULL, GL_STATIC_DRAW);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        // define the range of the buffer that links to a uniform binding point
+        glBindBufferRange(GL_UNIFORM_BUFFER, 0, uboStruct, 0, size);
+        return uboStruct;
     }
 
 };

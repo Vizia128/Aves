@@ -26,6 +26,8 @@ namespace Aves {
 
 		void use() { glUseProgram(shaderID); }
 
+		GLuint CreateUniformBlock(const char* uniformBlockName, int size);
+
 	private:
 		void checkCompileErrors(unsigned int shader, std::string type);
 		static std::string read_shader_file(const char* shaderFile);//std::filesystem::path::value_type* shader_file);

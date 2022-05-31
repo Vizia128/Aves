@@ -75,6 +75,19 @@ namespace Aves {
 		//UBOobj1 = ourShader.CreateUniformBlock("Object1", sizeof(object1));
 	}
 
+	void Window::renderWindow() {
+
+		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		//ourShader.use();
+		glBindVertexArray(VAO);
+		glDrawArrays(GL_POINTS, 0, numVertices);
+
+		glfwSwapBuffers(window);
+
+	}
+
 	Window::~Window()
 	{
 
@@ -84,7 +97,7 @@ namespace Aves {
 	{
 		int numWidthSquares = width / cellWidth + (width % cellWidth != 0);
 		int numHeightSquares = height / cellWidth + (height % cellWidth != 0);
-		int numVertices = numWidthSquares * numHeightSquares;
+		numVertices = numWidthSquares * numHeightSquares;
 
 		std::vector <float> vertices(numVertices * 6);
 

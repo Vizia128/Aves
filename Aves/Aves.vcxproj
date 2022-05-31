@@ -105,6 +105,11 @@
     <ClCompile Include="src\Window.cpp" />
     <ClCompile Include="src\World.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="vendor\glad\src\glad.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\Shaders\fragment.glsl" />
+    <None Include="src\Shaders\vertex.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

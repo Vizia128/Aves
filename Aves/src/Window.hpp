@@ -14,12 +14,16 @@ namespace Aves {
 	{
 	public:
 		Window();
-
 		Window(const char* title, unsigned int width, unsigned int height, unsigned int cellWidth, bool isFullscreen);
+		~Window();
 
 		void Init();
 
-		~Window();
+		void renderWindow();
+		
+		bool windowShouldClose() {
+			return glfwWindowShouldClose(window);
+		}
 
 	private:
 		std::vector <float> getVertices();
@@ -29,6 +33,7 @@ namespace Aves {
 		unsigned int width;
 		unsigned int height;
 		unsigned int cellWidth;
+		unsigned int numVertices;
 		bool isFullscreen;
 
 		GLFWwindow* window;
