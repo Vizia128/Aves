@@ -180,7 +180,7 @@ namespace Aves {
 			}
 
 		}
-
+		
 		return vertices;
 	}
 }

@@ -104,18 +104,31 @@ namespace Aves {
         return std::string{ std::istreambuf_iterator<char> {ifs}, {} };
     }
 
-    GLuint Shader::CreateUniformBlock(const char* uniformBlockName, int size) {
+    GLuint Shader::CreateUniformBlock(const char* uniformBlockName, int size) 
+    {
         GLuint UniformBlockIndex = glGetUniformBlockIndex(shaderID, uniformBlockName);
         glUniformBlockBinding(shaderID, UniformBlockIndex, 0);
 
         GLuint uboStruct;
         glGenBuffers(1, &uboStruct);
         glBindBuffer(GL_UNIFORM_BUFFER, uboStruct);
-        glBufferData(GL_UNIFORM_BUFFER, size, NULL, GL_STATIC_DRAW);
+        glBufferData(GL_UNIFORM_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
         // define the range of the buffer that links to a uniform binding point
         glBindBufferRange(GL_UNIFORM_BUFFER, 0, uboStruct, 0, size);
         return uboStruct;
+    }
+
+    GLuint Shader::CreateShaderStorageBuffer(const char* bufferName, int size, int bindingNum)
+    {
+        GLuint ssbo;
+        glGenBuffers(1, &ssbo);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingNum, ssbo);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+        return ssbo;
     }
 
 };
