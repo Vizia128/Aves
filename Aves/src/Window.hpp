@@ -20,6 +20,10 @@ namespace Aves {
 		void Init();
 
 		void renderWindow();
+
+		void processInput();
+
+		void moveCamera();
 		
 		bool windowShouldClose() {
 			return glfwWindowShouldClose(window);
@@ -40,5 +44,20 @@ namespace Aves {
 		Shader renderShader;
 
 		unsigned int VBO, VAO;
+
+		GLuint cameraID;
+		struct {
+			glm::vec4 cameraPos = glm::dvec4(0.0, 1.0, 0.0, 0.0);
+			glm::vec4 cameraDir = glm::vec4(0.0, 0.0, 1.0, 0.0);
+			glm::vec2 windowRes = glm::vec2(1024, 640);
+			float time = 0.0;
+		}camera;
+
+		struct {
+			bool W = false;
+			bool A = false;
+			bool S = false;
+			bool D = false;
+		}userInput;
 	};
 }

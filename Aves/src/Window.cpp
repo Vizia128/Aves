@@ -71,7 +71,7 @@ namespace Aves {
 
 		renderShader.use();
 
-		//UBOcamera = renderShader.CreateUniformBlock("Camera", sizeof(camera));
+		cameraID = renderShader.CreateUniformBlock("Camera", sizeof(camera));
 		//UBOobj1 = ourShader.CreateUniformBlock("Object1", sizeof(object1));
 	}
 
@@ -92,6 +92,50 @@ namespace Aves {
 	{
 
 	}
+
+	// query GLFW whether relevant keys are pressed/released this frame and react accordingly
+	void Window::processInput() {
+		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+			glfwSetWindowShouldClose(window, true);
+
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+			userInput.W = true;
+		else
+			userInput.W = false;
+
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+			userInput.A = true;
+		else
+			userInput.A = false;
+
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+			userInput.S = true;
+		else
+			userInput.S = false;
+
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+			userInput.D = true;
+		else
+			userInput.D = false;
+	}
+
+	void Window::moveCamera() {
+		float v_x = userInput.D - userInput.A;
+		float v_z = userInput.W - userInput.S;
+
+		camera.cameraPos.x += v_x / 12;
+		camera.cameraPos.z += v_z / 12;
+
+		glBindBuffer(GL_UNIFORM_BUFFER, cameraID);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(camera), &camera);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+		double tempTime = double(std::chrono::duration_cast<std::chrono::milliseconds>
+			(std::chrono::steady_clock::now().time_since_epoch()).count()) / 1000;
+
+		camera.time = float(fmod(tempTime, 12 * 3.14159265358979323846));
+	}
+
 
 	std::vector <float> Window::getVertices()
 	{

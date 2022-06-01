@@ -6,12 +6,12 @@ namespace Aves {
     class Renderer {
 
     public:
-        Renderer() {}
-        Renderer(const char* vertexPath, const char* fragmentPath);
+        Renderer();
         ~Renderer();
-
 
     private:
         Shader renderShader;
+        unsigned int numVertices;
+        unsigned int VBO, VAO;
     };
 }

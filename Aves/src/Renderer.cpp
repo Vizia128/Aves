@@ -2,14 +2,8 @@
 
 namespace Aves {
 
-    Renderer::Renderer(const char* vertexPath, const char* fragmentPath)
+    Renderer::Renderer()
     {
-        Shader vertexShader;
-        vertexShader.Init(vertexPath, "VERTEX");
-        Shader fragmentShader;
-        fragmentShader.Init(fragmentPath, "FRAGMENT");
-
-        renderShader.Init(vertexShader, fragmentShader);
 
 
     }
@@ -18,6 +12,7 @@ namespace Aves {
     {
 
     }
+
 
 
 }

@@ -12,12 +12,11 @@ int main()
 	//Aves::World world;
 	Aves::Window window;
 
-	while (1)
+	while (!window.windowShouldClose())
 	{
 
-        //renderer.processInput();
-        //renderer.moveCamera();
-        //renderer.updateObjPos();
+        window.processInput();
+        window.moveCamera();
         window.renderWindow();
 
         glfwPollEvents();
