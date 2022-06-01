@@ -3,22 +3,16 @@
 
 #include "Log.hpp"
 #include "World.hpp"
-#include "Window.hpp"
 
 int main()
 {
 	Aves::Log::Init();
 
-	//Aves::World world;
-	Aves::Window window;
+	Aves::World world;
+	
 
-	while (!window.windowShouldClose())
+	while (!world.shouldEnd())
 	{
-
-        window.processInput();
-        window.moveCamera();
-        window.renderWindow();
-
-        glfwPollEvents();
+		world.run();
 	}
 }
