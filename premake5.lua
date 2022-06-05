@@ -20,7 +20,8 @@ project "Aves"
         "Aves/vendor/spdlog/include",
         "Aves/vendor/glm-master",
         "Aves/vendor/glad/include",
-        "Aves/vendor/glfw_precompiled/include"
+        "Aves/vendor/glfw_precompiled/include",
+        "Aves/vendor/Klein/public"
     }
 
     libdirs
