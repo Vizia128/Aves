@@ -3,6 +3,7 @@
 
 namespace Aves {
 	World::World()
+		:cube(Cube())
 	{
 
 	}
@@ -15,6 +16,9 @@ namespace Aves {
 	void World::run()
 	{
 		window.processInput();
+
+		cube.step();
+
 		window.moveCamera();
 		window.renderWindow();
 

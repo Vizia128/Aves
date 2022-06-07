@@ -9,22 +9,156 @@
 out vec4 FragColor;
 flat in vec3 ourColor;
 
+//------------------------------------------------------------------
+//------------------- 3D GEOMETRIC ALGEBRA -------------------------
 
+// From jeremyong.com/klein
+
+// If integrating this library with other code, remember that the point layout
+// here has the homogeneous component in p3[0] and not p3[3]. The swizzle to
+// get the vec3 Cartesian representation is p3.yzw
+
+// p0 -> (e0, e1, e2, e3)
+// p1 -> (1, e23, e31, e12)
+// p2 -> (e0123, e01, e02, e03)
+// p3 -> (e123, e032, e013, e021)
+
+struct kln_line
+{
+    vec4 p1;
+    vec4 p2;
+};
+
+struct kln_point
+{
+    vec4 p3;
+};
+
+struct kln_motor
+{
+    vec4 p1;
+    vec4 p2;
+};
+
+kln_motor kln_mul(in kln_motor a, in kln_motor b)
+{
+    kln_motor c;
+    vec4 a_zyzw = a.p1.zyzw;
+    vec4 a_ywyz = a.p1.ywyz;
+    vec4 a_wzwy = a.p1.wzwy;
+    vec4 c_wwyz = b.p1.wwyz;
+    vec4 c_yzwy = b.p1.yzwy;
+
+    c.p1 = a.p1.x * b.p1;
+    vec4 t = a_ywyz * c_yzwy;
+    t += a_zyzw * b.p1.zxxx;
+    t.x = -t.x;
+    c.p1 += t;
+    c.p1 -= a_wzwy * c_wwyz;
+
+    c.p2 = a.p1.x * b.p2;
+    c.p2 += a.p2 * b.p1.x;
+    c.p2 += a_ywyz * b.p2.yzwy;
+    c.p2 += a.p2.ywyz * c_yzwy;
+    t = a_zyzw * b.p2.zxxx;
+    t += a_wzwy * b.p2.wwyz;
+    t += a.p2.zxxx * b.p1.zyzw;
+    t += a.p2.wzwy * c_wwyz;
+    t.x = -t.x;
+    c.p2 -= t;
+    return c;
+}
+
+kln_point kln_apply(in kln_motor m, in kln_point p)
+{
+    vec4 scale = vec4(0, 2, 2, 2);
+
+    vec4 t1 = m.p1 * m.p1.xwyz;
+    t1 -= m.p1.x * m.p1.xzwy;
+    t1 *= scale;
+
+    vec4 t2 = m.p1.x * m.p1.xwyz;
+    t2 += m.p1.xzwy * m.p1;
+    t2 *= scale;
+
+    vec4 t3 = m.p1 * m.p1;
+    t3 += m.p1.yxxx * m.p1.yxxx;
+    vec4 t4 = m.p1.zwyz * m.p1.zwyz;
+    t4 += m.p1.wzwy * m.p1.wzwy;
+    t3 -= t4 * vec4(-1.0, 1.0, 1.0, 1.0);
+
+    t4 = m.p1.xzwy * m.p2.xwyz;
+    t4 -= m.p1.x * m.p2;
+    t4 -= m.p1.xwyz * m.p2.xzwy;
+    t4 -= m.p1 * m.p2.x;
+    t4 *= scale;
+
+    // TODO: provide variadic motor-point application
+    kln_point q;
+    q.p3 = t1 * p.p3.xwyz;
+    q.p3 += t2 * p.p3.xzwy;
+    q.p3 += t3 * p.p3;
+    q.p3 += t4 * p.p3.x;
+    return  q;
+}
+
+kln_point kln_apply(in kln_motor m)
+{
+    kln_point p;
+    p.p3 = m.p1 * m.p2.x;
+    p.p3 += m.p1.x * m.p2;
+    p.p3 += m.p1.xwyz * m.p2.xzwy;
+    p.p3 = m.p1.xzwy * m.p2.xwyz - p.p3;
+    p.p3 *= vec4(0.0, 2.0, 2.0, 2.0);
+    p.p3.x = 1.0;
+    return p;
+}
+
+//------------------------------------------------------------------
 //------------- PRIMATIVE SIGNED DISTANCE FUNCTIONS ----------------
 
-float sdSphere( vec3 pnt, vec3 sphereCenter, float radius ) {
+
+//------------------------- SPHERE ---------------------------------
+
+float sdSphere( vec3 pnt, vec3 sphereCenter, float radius ) 
+{
 	return length(pnt - sphereCenter.xyz) - radius;
 }
 
-float sdBox( vec3 pnt, vec3 boxDim ) {
+float sdSphere( vec3 pnt, float radius ) {
+	return length(pnt) - radius;
+}
+
+float sdSphere( kln_point pnt, kln_point center, float radius) 
+{
+    return sdSphere(pnt.p3.yzw, center.p3.yzw, radius);
+}
+
+float sdSphere( kln_point pnt, kln_motor invPose, float radius) 
+{
+    return sdSphere(kln_apply(invPose, pnt).p3.yzw, radius);
+}
+
+
+//--------------------------- BOX ---------------------------------
+
+float sdBox( vec3 pnt, vec3 boxDim ) 
+{
   vec3 q = abs(pnt) - boxDim;
   return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
 }
 
+float sdBox( kln_point pnt, kln_motor invPose, vec3 boxDim) 
+{
+    return sdBox(kln_apply(invPose, pnt).p3.yzw, boxDim);
+}
 
-//------------------------ CAMERA -------------------------------
 
-layout (std140) uniform Camera {
+//------------------------------------------------------------------
+//-------------------------- CAMERA --------------------------------
+
+layout (std140) uniform Camera 
+{
     vec3 cameraPos;
     vec3 cameraDir;    // 2x3x4 bytes
     vec2 windowRes;     // 2x3x4 + 2x2 bytes
@@ -32,17 +166,19 @@ layout (std140) uniform Camera {
     float time;        // 2x3x8 + 2x2 + 2 bytes
 };
 
+//------------------------------------------------------------------
+//------------- ENVIRONMENT 1 : INSIDE OF A SPHERE -----------------
 
-//----------- ENVIRONMENT 1 : INSIDE OF A SPHERE -----------------
-
-float sdEnv1(vec3 pnt) { //, vec3 sphereCenter, float radius) {
+float sdEnv1(vec3 pnt) //, vec3 sphereCenter, float radius)
+{ 
 	return -(length(pnt - vec3(0.0)) - 64.);
 }
 
-
-//------------------------ OBJECT 1 ------------------------------
+//------------------------------------------------------------------
+//-------------------------- OBJECT 1 ------------------------------
 #define N 2
-layout (std140) uniform Object1 {
+layout (std140) uniform Object1 
+{
     vec3 pos;           // position
     vec4 rot;           // quaternion rotation
     float size;         // scaling
@@ -62,39 +198,46 @@ layout (std140) uniform Object1 {
 
 bool object1Active[N];
 
-float sdPntObject1(vec3 pnt, int ID) { 
+float sdPntObject1(vec3 pnt, int ID) 
+{ 
     return sdBox(pnt, vec3(1.,2.,3.));
 }
 
-float sdRayObject1Bound(vec3 rayOrigin, vec3 rayDir, int ID) {
+float sdRayObject1Bound(vec3 rayOrigin, vec3 rayDir, int ID) 
+{
     vec3 objPos = object1[ID].pos;
     float h = max(0.0, dot(objPos - rayOrigin, rayDir));  //rayDir must be normalized
     vec3 pnt = rayOrigin + rayDir * h;
     return sdSphere(pnt, objPos, object1[ID].boundRad);
 }
 
+//------------------------------------------------------------------
+//---------------------- RENDERING FUNCTIONS -----------------------
 
-//---------------------- RENDERING FUNCTIONS ---------------------
-
-float calcDist(vec3 pnt) {
+float calcDist(vec3 pnt) 
+{
     vec4 s = vec4(0, 1, 6, 1);
     
     float sphereDist =  length(pnt-s.xyz)-s.w;
+    float cubeDist = sdBox(vec3(0, 2, 4), vec3(1,1,1));
     float planeDist = pnt.y;
     
     float d = min(sphereDist, planeDist);
     return d;
 }
 
-vec2 rayMarch(vec3 rayOrigin, vec3 rayDir) {
+vec2 rayMarch(vec3 rayOrigin, vec3 rayDir) 
+{
     
-    for (int i = 0; i<N; i++) {
+    for (int i = 0; i<N; i++) 
+    {
         object1Active[i] = sdRayObject1Bound(rayOrigin, rayDir, i) <= object1[i].boundRad;
     }
 
     int stp = 0;
     float distTot = 0.0, distStp = 0.0;
-    for (;stp<MAX_STEPS && distTot<MAX_DIST && distStp>SURF_DIST; stp++) {
+    for (;stp<MAX_STEPS && distTot<MAX_DIST && distStp>SURF_DIST; stp++) 
+    {
         vec3 pnt = rayOrigin + rayDir*distStp;
         distStp = calcDist(pnt);
         distTot += distStp;
@@ -103,11 +246,13 @@ vec2 rayMarch(vec3 rayOrigin, vec3 rayDir) {
     return vec2(distTot, stp);
 }
 
-vec2 RayMarch(vec3 ro, vec3 rd) {
+vec2 RayMarch(vec3 ro, vec3 rd) 
+{
 	float dO=0.;
 
     int i =0;
-    for(; i<MAX_STEPS; i++) {
+    for(; i<MAX_STEPS; i++) 
+    {
     	vec3 p = ro + rd*dO;
         float dS = calcDist(p);
         dO += dS;
@@ -116,7 +261,8 @@ vec2 RayMarch(vec3 ro, vec3 rd) {
     return vec2(dO, i);
 }
 
-vec3 calcNormal(vec3  pos, float dist) {
+vec3 calcNormal(vec3  pos, float dist) 
+{
     const float h = 0.0001;      // replace by an appropriate value
     #define ZERO (min(int(windowRes.x),0)) // non-constant zero
     vec3 n = vec3(0.0);
@@ -128,7 +274,8 @@ vec3 calcNormal(vec3  pos, float dist) {
     return normalize(n);
 }
 
-vec3 calcLighting(vec3 p) {
+vec3 calcLighting(vec3 p) 
+{
     vec3 lightPos = vec3(0, 5, 6);
     vec3 l = normalize(lightPos-p);
     vec3 n = calcNormal(p, 0.0001);
@@ -142,13 +289,19 @@ vec3 calcLighting(vec3 p) {
     return vec3(dif);
 }
 
-vec3 rayDirection() {
+vec3 rayDirection() 
+{
     vec2 xy = gl_FragCoord.xy - 0.5*windowRes - 0.5;
     float z = windowRes.y / tan(radians(fov) / 2.0);
     return normalize(vec3(xy, -z));
 }
 
-void main() {
+
+//------------------------------------------------------------------
+//---------------------------- MAIN --------------------------------
+
+void main() 
+{
 #if 0
     vec3 rayDir = rayDirection();
     vec3 rayOrigin = cameraPos;
@@ -175,15 +328,18 @@ void main() {
 
 	vec2 dist_steps = RayMarch(rayOrigin, rayDir);
 
-    if (dist_steps.x < MAX_DIST && dist_steps.y < MAX_STEPS) {
+    if (dist_steps.x < MAX_DIST && dist_steps.y < MAX_STEPS) 
+    {
 	    vec3 p = rayOrigin + rayDir * dist_steps.x;
  
         color = calcLighting(p);
     }
-    else if (!(dist_steps.y < MAX_STEPS)){
+    else if (!(dist_steps.y < MAX_STEPS))
+    {
         color = vec3(0.0, 0.8, 1.0);
     }
-    else {
+    else 
+    {
         color = vec3(0.8, 0.1, 0.5);
     }
     

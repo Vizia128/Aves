@@ -1,5 +1,6 @@
 #pragma once
 #include "Window.hpp"
+#include "Cube.hpp"
 
 namespace Aves {
 	class World
@@ -10,8 +11,11 @@ namespace Aves {
 
 		void run();
 
+		
 		bool shouldEnd() { return window.windowShouldClose(); }
 	private:
 		Window window;
+
+		Cube cube;
 	};
 }
