@@ -8,6 +8,7 @@
 int main()
 {
 	Aves::Log::Init();
+
 	Aves::World world;
 
 

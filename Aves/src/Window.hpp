@@ -50,8 +50,11 @@ namespace Aves {
 		kln::motor tcm = kln::motor(-1, 3, 2, 4, 0, 0, 0, 0);
 
 		struct {
-			kln::motor pose = kln::translator(-1, 0, 0, 1) * kln::rotor(1, 1, 0, 0);
-			glm::vec2 windowRes = glm::vec2(1024, 640);
+			kln::motor pose = kln::motor(-1, 0, 0, 0, 0, 1, -3, 0);
+			//kln::translator translator = kln::translator(-1, 0, 0, 1);
+			//kln::rotor rotor = kln::rotor(1, 1, 0, 0);
+			glm::vec2 windowRes = glm::vec2(1280, 720);
+			float fov = 2;
 			float time = 0.0;
 
 			kln::motor tempCubeMotor = kln::motor(-1, 3, 2, 4, 0, 0, 0, 0).inverse();

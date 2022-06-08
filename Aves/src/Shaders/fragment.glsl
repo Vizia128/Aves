@@ -286,6 +286,8 @@ float sdBox( kln_point pnt, kln_motor invPose, vec3 boxDim)
 layout (std140) uniform Camera 
 {
     kln_motor camPose;
+    //kln_translator camTran;
+    //kln_rotor camRotor;
     vec2 windowRes;
     float fov;
     float time;
@@ -455,23 +457,21 @@ void main()
 
 	vec3 color = vec3(1., 0.4, 0.0);
 
-    kln_point klnRayOrigin;
-    klnRayOrigin.p3 = vec4(1,0,0,0);
-    klnRayOrigin = kln_apply(camPose, klnRayOrigin);
-	vec3 rayOrigin = klnRayOrigin.p3.yzw;
+    //kln_point klnRayOrigin;
+    //klnRayOrigin.p3 = vec4(1,0,0,0);
+    kln_point klnRayOrigin = kln_apply(camPose);
+	vec3 rayOrigin = klnRayOrigin.p3.yzw / klnRayOrigin.p3.x;
 
     kln_point klnRayDir;
-    klnRayDir.p3 = vec4(0, uv, 1);
+    klnRayDir.p3 = vec4(0, uv, fov);
     klnRayDir = kln_apply(camPose, klnRayDir);
-    vec3 rayDir = klnRayDir.p3.yzw;
+    vec3 rayDir = normalize(klnRayDir.p3.yzw);
 	//vec3 rayDir = normalize(normalize(camDir.p3.yzw) + normalize(vec3(uv, 1.0)));
-
-
 
 
 	vec2 dist_steps = RayMarch(rayOrigin, rayDir);
 
-    if (dist_steps.x < MAX_DIST && dist_steps.y < MAX_STEPS) 
+    if (dist_steps.x < MAX_DIST && dist_steps.y < MAX_STEPS)
     {
 	    vec3 p = rayOrigin + rayDir * dist_steps.x;
  
@@ -481,7 +481,7 @@ void main()
     {
         color = vec3(0.0, 0.8, 1.0);
     }
-    else 
+    else
     {
         color = vec3(0.8, 0.1, 0.5);
     }
@@ -491,6 +491,4 @@ void main()
 
 	FragColor = vec4(color, 1.0f);
 #endif
-
-
 }

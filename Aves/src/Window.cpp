@@ -124,11 +124,13 @@ namespace Aves {
 		{
 			kln::translator tr(0.1*sqrt(abs(e01) + abs(e02) + abs(e03)), e01, e02, e03);
 			camera.pose = camera.pose * tr;
+			camera.pose.normalize();
 		}
 		if (yaw || pitch || roll)
 		{
 			kln::rotor rtr(0.01*sqrt(abs(pitch)+abs(yaw)+abs(roll)), -pitch, yaw, -roll);
 			camera.pose = camera.pose * rtr;
+			camera.pose.normalize();
 		}
 
 		if (tempCube1 || tempCube2)
