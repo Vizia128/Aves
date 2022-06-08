@@ -159,11 +159,13 @@ float sdBox( kln_point pnt, kln_motor invPose, vec3 boxDim)
 
 layout (std140) uniform Camera 
 {
-    vec3 cameraPos;
-    vec3 cameraDir;    // 2x3x4 bytes
+    vec4 cameraPos;
+    vec4 cameraDir;    // 2x3x4 bytes
     vec2 windowRes;     // 2x3x4 + 2x2 bytes
     float fov;
     float time;        // 2x3x8 + 2x2 + 2 bytes
+
+    kln_motor tempCube;
 };
 
 //------------------------------------------------------------------
@@ -219,10 +221,15 @@ float calcDist(vec3 pnt)
     vec4 s = vec4(0, 1, 6, 1);
     
     float sphereDist =  length(pnt-s.xyz)-s.w;
-    float cubeDist = sdBox(vec3(0, 2, 4), vec3(1,1,1));
-    float planeDist = pnt.y;
+    //float cubeDist = sdBox(pnt-vec3(3, 2, 4), vec3(0.5,1.0,1.5));
+
+    kln_point KLN_PNT;
+    KLN_PNT.p3 = vec4(1, pnt);
+    float cubeDist = sdBox(KLN_PNT, tempCube, vec3(0.5,1.0,1.5));
     
-    float d = min(sphereDist, planeDist);
+    float planeDist = 100000;//pnt.y;
+    
+    float d = min(sphereDist,min( planeDist, cubeDist));
     return d;
 }
 
@@ -322,8 +329,8 @@ void main()
     vec2 uv = (gl_FragCoord.xy - 0.5*winSize - 0.5) / winSize.y;
 
 	vec3 color = vec3(1., 0.4, 0.0);
-	vec3 rayOrigin = cameraPos.xyz;
-	vec3 rayDir = normalize(1.0 * normalize(cameraDir.xyz) + 16.0 * normalize(vec3(uv, 1.0)));
+	vec3 rayOrigin = cameraPos.yzw;
+	vec3 rayDir = normalize(1.0 * normalize(cameraDir.yzw) + 16.0 * normalize(vec3(uv, 1.0)));
 
 
 	vec2 dist_steps = RayMarch(rayOrigin, rayDir);

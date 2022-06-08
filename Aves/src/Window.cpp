@@ -1,4 +1,5 @@
 #include "Window.hpp"
+#include<iostream>
 
 namespace Aves {
 
@@ -98,33 +99,50 @@ namespace Aves {
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 			glfwSetWindowShouldClose(window, true);
 
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-			userInput.W = true;
-		else
-			userInput.W = false;
-
-		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-			userInput.A = true;
-		else
-			userInput.A = false;
-
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-			userInput.S = true;
-		else
-			userInput.S = false;
-
-		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-			userInput.D = true;
-		else
-			userInput.D = false;
+		for (int key = 0; key < 128; key++)
+		{
+			if (glfwGetKey(window, key) == GLFW_PRESS)
+				userKeyPress[key] = true;
+			else
+				userKeyPress[key] = false;
+		}
 	}
 
 	void Window::moveCamera() {
-		float v_x = userInput.D - userInput.A;
-		float v_z = userInput.W - userInput.S;
+		float e03 = userKeyPress[int('W')] - userKeyPress[int('S')];
+		float e01 = userKeyPress[int('D')] - userKeyPress[int('A')];
+		float e02 = userKeyPress[int('X')] - userKeyPress[int('Z')];
+		
+		float yaw = userKeyPress[int('Q')] - userKeyPress[int('E')];
+		float pitch = userKeyPress[int('R')] - userKeyPress[int('F')];
+		float roll = userKeyPress[int('T')] - userKeyPress[int('G')];
 
-		camera.cameraPos.x += v_x / 12;
-		camera.cameraPos.z += v_z / 12;
+		float tempCube1 = userKeyPress[int('U')] - userKeyPress[int('I')];
+		float tempCube2 = userKeyPress[int('J')] - userKeyPress[int('K')];
+
+		if (e01 || e02 || e03)
+		{
+			kln::translator tr(-sqrt(abs(e01) + abs(e02) + abs(e03)) * 2 / 12, e01, e02, e03);
+
+			camera.cameraPos += tr;
+		}
+		if (yaw || pitch || roll)
+		{
+			kln::rotor rtr(1, yaw, pitch, roll);
+
+			camera.cameraDir.y += rtr.e12();
+			camera.cameraDir.z += rtr.e13();
+			camera.cameraDir.w += rtr.e23();
+		}
+
+		if (tempCube1 || tempCube2)
+		{
+			kln::translator tr(-abs(tempCube1) * 2 / 12, tempCube1, 0, 0);
+			kln::rotor rtr(-abs(tempCube2) * 2 / 12, tempCube2, 0, 0);
+
+			tcm += (tr * rtr);
+			camera.tempCubeMotor = tcm.inverse();
+		}
 
 		glBindBuffer(GL_UNIFORM_BUFFER, cameraID);
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(camera), &camera);
