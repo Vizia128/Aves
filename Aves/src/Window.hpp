@@ -50,9 +50,7 @@ namespace Aves {
 		kln::motor tcm = kln::motor(-1, 3, 2, 4, 0, 0, 0, 0);
 
 		struct {
-			//glm::vec4 cameraPos = glm::dvec4(0.0, 0.0, 1.0, 0.0);
-			kln::translator cameraPos = kln::translator(-1.0, 0.0, 1.0, 0.0);
-			glm::vec4 cameraDir = glm::vec4(0.0, 0.0, 1.0, 0.0);
+			kln::motor pose = kln::translator(-1, 0, 0, 1) * kln::rotor(1, 1, 0, 0);
 			glm::vec2 windowRes = glm::vec2(1024, 640);
 			float time = 0.0;
 

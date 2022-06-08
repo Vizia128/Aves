@@ -14,14 +14,15 @@ flat in vec3 ourColor;
 
 // From jeremyong.com/klein
 
-// If integrating this library with other code, remember that the point layout
-// here has the homogeneous component in p3[0] and not p3[3]. The swizzle to
-// get the vec3 Cartesian representation is p3.yzw
-
 // p0 -> (e0, e1, e2, e3)
 // p1 -> (1, e23, e31, e12)
 // p2 -> (e0123, e01, e02, e03)
 // p3 -> (e123, e032, e013, e021)
+
+struct kln_plane
+{
+    vec4 p0;
+};
 
 struct kln_line
 {
@@ -29,9 +30,22 @@ struct kln_line
     vec4 p2;
 };
 
+// If integrating this library with other code, remember that the point layout
+// here has the homogeneous component in p3[0] and not p3[3]. The swizzle to
+// get the vec3 Cartesian representation is p3.yzw
 struct kln_point
 {
     vec4 p3;
+};
+
+struct kln_rotor
+{
+    vec4 p1;
+};
+
+struct kln_translator
+{
+    vec4 p2;
 };
 
 struct kln_motor
@@ -39,6 +53,28 @@ struct kln_motor
     vec4 p1;
     vec4 p2;
 };
+
+kln_rotor kln_mul(in kln_rotor a, in kln_rotor b)
+{
+    kln_rotor c;
+    c.p1 = a.p1.x * b.p1;
+    c.p1 -= a.p1.yzwy * b.p1.ywyz;
+
+    vec4 t = a.p1.zyzw * b.p1.zxxx;
+    t += a.p1.wwyz * b.p1.wzwy;
+    t.x = -t.x;
+
+    c.p1 += t;
+    return c;
+}
+
+kln_translator kln_mul(in kln_translator a, in kln_translator b)
+{
+    // (1 + a.p2) * (1 + b.p2) = 1 + a.p2 + b.p2
+    kln_translator c;
+    c.p2 = a.p2 + b.p2;
+    return c;
+}
 
 kln_motor kln_mul(in kln_motor a, in kln_motor b)
 {
@@ -67,6 +103,91 @@ kln_motor kln_mul(in kln_motor a, in kln_motor b)
     t.x = -t.x;
     c.p2 -= t;
     return c;
+}
+
+kln_plane kln_apply(in kln_rotor r, in kln_plane p)
+{
+    vec4 dc_scale = vec4(1.0, 2.0, 2.0, 2.0);
+    vec4 neg_low = vec4(-1.0, 1.0, 1.0, 1.0);
+
+    vec4 t1 = r.p1.zxxx * r.p1.zwyz;
+    t1 += r.p1.yzwy * r.p1.yyzw;
+    t1 *= dc_scale;
+
+    vec4 t2 = r.p1 * r.p1.xwyz;
+    t2 -= (r.p1.wxxx * r.p1.wzwy) * neg_low;
+    t2 *= dc_scale;
+
+    vec4 t3 = r.p1 * r.p1;
+    t3 -= r.p1.xwyz * r.p1.xwyz;
+    t3 += r.p1.xxxx * r.p1.xxxx;
+    t3 -= r.p1.xzwy * r.p1.xzwy;
+
+    // TODO: provide variadic rotor-plane application
+    kln_plane q;
+    q.p0 = t1 * p.p0.xzwy;
+    q.p0 += t2 * p.p0.xwyz;
+    q.p0 += t3 * p.p0;
+    return q;
+}
+
+kln_plane kln_apply(in kln_motor m, in kln_plane p)
+{
+    vec4 dc_scale = vec4(1.0, 2.0, 2.0, 2.0);
+    vec4 neg_low = vec4(-1.0, 1.0, 1.0, 1.0);
+
+    vec4 t1 = m.p1.zxxx * m.p1.zwyz;
+    t1 += m.p1.yzwy * m.p1.yyzw;
+    t1 *= dc_scale;
+
+    vec4 t2 = m.p1 * m.p1.xwyz;
+    t2 -= (m.p1.wxxx * m.p1.wzwy) * neg_low;
+    t2 *= dc_scale;
+
+    vec4 t3 = m.p1 * m.p1;
+    t3 -= m.p1.xwyz * m.p1.xwyz;
+    t3 += m.p1.xxxx * m.p1.xxxx;
+    t3 -= m.p1.xzwy * m.p1.xzwy;
+
+    vec4 t4 = m.p1.x * m.p2;
+    t4 += m.p1.xzwy * m.p2.xwyz;
+    t4 += m.p1 * m.p2.x;
+    t4 -= m.p1.xwyz * m.p2.xzwy;
+    t4 *= vec4(0.0, 2.0, 2.0, 2.0);
+
+    // TODO: provide variadic motor-plane application
+    kln_plane q;
+    q.p0 = t1 * p.p0.xzwy;
+    q.p0 += t2 * p.p0.xwyz;
+    q.p0 += t3 * p.p0;
+    q.p0 += vec4(dot(t4, p.p0), 0.0, 0.0, 0.0);
+    return q;
+}
+
+kln_point kln_apply(in kln_rotor r, in kln_point p)
+{
+    vec4 scale = vec4(0, 2, 2, 2);
+
+    vec4 t1 = r.p1 * r.p1.xwyz;
+    t1 -= r.p1.x * r.p1.xzwy;
+    t1 *= scale;
+
+    vec4 t2 = r.p1.x * r.p1.xwyz;
+    t2 += r.p1.xzwy * r.p1;
+    t2 *= scale;
+
+    vec4 t3 = r.p1 * r.p1;
+    t3 += r.p1.yxxx * r.p1.yxxx;
+    vec4 t4 = r.p1.zwyz * r.p1.zwyz;
+    t4 += r.p1.wzwy * r.p1.wzwy;
+    t3 -= t4 * vec4(-1.0, 1.0, 1.0, 1.0);
+
+    // TODO: provide variadic rotor-point application
+    kln_point q;
+    q.p3 = t1 * p.p3.xwyz;
+    q.p3 += t2 * p.p3.xzwy;
+    q.p3 += t3 * p.p3;
+    return  q;
 }
 
 kln_point kln_apply(in kln_motor m, in kln_point p)
@@ -102,6 +223,10 @@ kln_point kln_apply(in kln_motor m, in kln_point p)
     return  q;
 }
 
+// If no entity is provided as the second argument, the motor is
+// applied to the origin.
+// NOTE: The motor MUST be normalized for the result of this operation to be
+// well defined.
 kln_point kln_apply(in kln_motor m)
 {
     kln_point p;
@@ -150,7 +275,8 @@ float sdBox( vec3 pnt, vec3 boxDim )
 
 float sdBox( kln_point pnt, kln_motor invPose, vec3 boxDim) 
 {
-    return sdBox(kln_apply(invPose, pnt).p3.yzw, boxDim);
+    return sdBox(pnt.p3.yzw, boxDim);
+    //return sdBox(kln_apply(invPose, pnt).p3.yzw, boxDim);
 }
 
 
@@ -159,11 +285,10 @@ float sdBox( kln_point pnt, kln_motor invPose, vec3 boxDim)
 
 layout (std140) uniform Camera 
 {
-    vec4 cameraPos;
-    vec4 cameraDir;    // 2x3x4 bytes
-    vec2 windowRes;     // 2x3x4 + 2x2 bytes
+    kln_motor camPose;
+    vec2 windowRes;
     float fov;
-    float time;        // 2x3x8 + 2x2 + 2 bytes
+    float time;
 
     kln_motor tempCube;
 };
@@ -221,11 +346,11 @@ float calcDist(vec3 pnt)
     vec4 s = vec4(0, 1, 6, 1);
     
     float sphereDist =  length(pnt-s.xyz)-s.w;
-    //float cubeDist = sdBox(pnt-vec3(3, 2, 4), vec3(0.5,1.0,1.5));
+    float cubeDist = sdBox(pnt-vec3(3, 2, 4), vec3(0.5,1.0,1.5));
 
-    kln_point KLN_PNT;
-    KLN_PNT.p3 = vec4(1, pnt);
-    float cubeDist = sdBox(KLN_PNT, tempCube, vec3(0.5,1.0,1.5));
+    //kln_point KLN_PNT;
+    //KLN_PNT.p3 = vec4(1, 2,3,4);
+    //float cubeDist = sdBox(KLN_PNT, tempCube, vec3(0.5,1.0,1.5));
     
     float planeDist = 100000;//pnt.y;
     
@@ -296,12 +421,12 @@ vec3 calcLighting(vec3 p)
     return vec3(dif);
 }
 
-vec3 rayDirection() 
-{
-    vec2 xy = gl_FragCoord.xy - 0.5*windowRes - 0.5;
-    float z = windowRes.y / tan(radians(fov) / 2.0);
-    return normalize(vec3(xy, -z));
-}
+//vec3 rayDirection() 
+//{
+//    vec2 winSize = windowRes.xy;
+//    vec2 uv = (gl_FragCoord.xy - 0.5*winSize - 0.5) / winSize.y;
+//    return normalize(1.0 * normalize(camDir.p3.yzw) + 16.0 * normalize(vec3(uv, 1.0)));
+//}
 
 
 //------------------------------------------------------------------
@@ -329,8 +454,19 @@ void main()
     vec2 uv = (gl_FragCoord.xy - 0.5*winSize - 0.5) / winSize.y;
 
 	vec3 color = vec3(1., 0.4, 0.0);
-	vec3 rayOrigin = cameraPos.yzw;
-	vec3 rayDir = normalize(1.0 * normalize(cameraDir.yzw) + 16.0 * normalize(vec3(uv, 1.0)));
+
+    kln_point klnRayOrigin;
+    klnRayOrigin.p3 = vec4(1,0,0,0);
+    klnRayOrigin = kln_apply(camPose, klnRayOrigin);
+	vec3 rayOrigin = klnRayOrigin.p3.yzw;
+
+    kln_point klnRayDir;
+    klnRayDir.p3 = vec4(0, uv, 1);
+    klnRayDir = kln_apply(camPose, klnRayDir);
+    vec3 rayDir = klnRayDir.p3.yzw;
+	//vec3 rayDir = normalize(normalize(camDir.p3.yzw) + normalize(vec3(uv, 1.0)));
+
+
 
 
 	vec2 dist_steps = RayMarch(rayOrigin, rayDir);
