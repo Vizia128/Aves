@@ -133,12 +133,38 @@ namespace Aves {
 			camera.pose.normalize();
 		}
 
-		if (tempCube1 || tempCube2)
+		if (tempCube1)
 		{
 			kln::translator tr(-abs(tempCube1) * 2 / 12, tempCube1, 0, 0);
+
+			//std::cout << "e0123 : " << camera.tempCubeMotor.e0123()
+			//	<< " e01 : " << camera.tempCubeMotor.e01()
+			//	<< " e02 : " << camera.tempCubeMotor.e02()
+			//	<< " e03 : " << camera.tempCubeMotor.e03()
+			//	<< " e12 : " << camera.tempCubeMotor.e12()
+			//	<< " e13 : " << camera.tempCubeMotor.e13()
+			//	<< " e23 : " << camera.tempCubeMotor.e23()
+			//	<< " scalar : " << camera.tempCubeMotor.scalar() << std::endl;
+
+			tcm = tcm * tr;
+			camera.tempCubeMotor = tcm.inverse();
+		}
+
+		if (tempCube2)
+		{
+
 			kln::rotor rtr(-abs(tempCube2) * 2 / 12, tempCube2, 0, 0);
 
-			tcm += (tr * rtr);
+			//std::cout << "e0123 : " << camera.tempCubeMotor.e0123()
+			//	<< " e01 : " << camera.tempCubeMotor.e01()
+			//	<< " e02 : " << camera.tempCubeMotor.e02()
+			//	<< " e03 : " << camera.tempCubeMotor.e03()
+			//	<< " e12 : " << camera.tempCubeMotor.e12()
+			//	<< " e13 : " << camera.tempCubeMotor.e13()
+			//	<< " e23 : " << camera.tempCubeMotor.e23()
+			//	<< " scalar : " << camera.tempCubeMotor.scalar() << std::endl;
+
+			tcm = tcm * rtr;
 			camera.tempCubeMotor = tcm.inverse();
 		}
 

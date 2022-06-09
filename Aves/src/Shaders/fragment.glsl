@@ -275,8 +275,8 @@ float sdBox( vec3 pnt, vec3 boxDim )
 
 float sdBox( kln_point pnt, kln_motor invPose, vec3 boxDim) 
 {
-    return sdBox(pnt.p3.yzw, boxDim);
-    //return sdBox(kln_apply(invPose, pnt).p3.yzw, boxDim);
+    //return sdBox(pnt.p3.yzw, boxDim);
+    return sdBox(kln_apply(invPose, pnt).p3.yzw, boxDim);
 }
 
 
@@ -348,13 +348,13 @@ float calcDist(vec3 pnt)
     vec4 s = vec4(0, 1, 6, 1);
     
     float sphereDist =  length(pnt-s.xyz)-s.w;
-    float cubeDist = sdBox(pnt-vec3(3, 2, 4), vec3(0.5,1.0,1.5));
+    //float cubeDist = sdBox(pnt-vec3(3, 2, 4), vec3(0.5,1.0,1.5));
 
-    //kln_point KLN_PNT;
-    //KLN_PNT.p3 = vec4(1, 2,3,4);
-    //float cubeDist = sdBox(KLN_PNT, tempCube, vec3(0.5,1.0,1.5));
+    kln_point KLN_PNT;
+    KLN_PNT.p3 = vec4(1, pnt);
+    float cubeDist = sdBox(KLN_PNT, tempCube, vec3(0.5,1.0,1.5));
     
-    float planeDist = 100000;//pnt.y;
+    float planeDist = pnt.y;
     
     float d = min(sphereDist,min( planeDist, cubeDist));
     return d;

@@ -47,7 +47,7 @@ namespace Aves {
 		unsigned int VBO, VAO;
 
 		GLuint cameraID;
-		kln::motor tcm = kln::motor(-1, 3, 2, 4, 0, 0, 0, 0);
+		kln::motor tcm = kln::motor(-1, 0, 0, 0, 0, 1, 3, -2); //kln::translator(10, 4, 1, 10) * kln::rotor(1, 1, 1, 1);
 
 		struct {
 			kln::motor pose = kln::motor(-1, 0, 0, 0, 0, 1, -3, 0);
@@ -57,7 +57,7 @@ namespace Aves {
 			float fov = 2;
 			float time = 0.0;
 
-			kln::motor tempCubeMotor = kln::motor(-1, 3, 2, 4, 0, 0, 0, 0).inverse();
+			kln::motor tempCubeMotor = kln::motor(-1, 0, 0, 0, 0, 1, 3, -2).inverse(); //(kln::translator(10, 4, 1, 10) * kln::rotor(1, 1, 1, 1)).inverse();
 		}camera;
 
 		bool userKeyPress[128] = { false };
