@@ -14,4 +14,4 @@ namespace Aves {
         unsigned int numVertices;
         unsigned int VBO, VAO;
     };
-}
+} //namespace Aves

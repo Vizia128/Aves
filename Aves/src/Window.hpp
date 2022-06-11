@@ -62,4 +62,4 @@ namespace Aves {
 
 		bool userKeyPress[128] = { false };
 	};
-}
+} //namespace Aves

@@ -1,6 +1,6 @@
 #version 460
 
-#define MAX_STEPS 256
+#define MAX_STEPS 1024
 #define MAX_DIST 200.
 #define SURF_DIST .01
 #define PI 3.14159265358979323846
@@ -308,12 +308,11 @@ float sdEnv1(vec3 pnt) //, vec3 sphereCenter, float radius)
 #define N 2
 layout (std140) uniform Object1 
 {
-    vec3 pos;           // position
-    vec4 rot;           // quaternion rotation
+    kln_motor Pose;
     float size;         // scaling
     float boundRad;     // bounding sphere radius
 
-    vec3 color;         // rgb
+    vec4 color;         // rgb
     float radiance;     // light source
     float transparency; // transparency
     float refIndex;     // refractive index
@@ -327,18 +326,19 @@ layout (std140) uniform Object1
 
 bool object1Active[N];
 
-float sdPntObject1(vec3 pnt, int ID) 
+float sdObject1(kln_point pnt, int ID) 
 { 
-    return sdBox(pnt, vec3(1.,2.,3.));
+    return sdBox(pnt, object1[ID].Pose, vec3(1.,2.,3.));
 }
 
-float sdRayObject1Bound(vec3 rayOrigin, vec3 rayDir, int ID) 
-{
-    vec3 objPos = object1[ID].pos;
-    float h = max(0.0, dot(objPos - rayOrigin, rayDir));  //rayDir must be normalized
-    vec3 pnt = rayOrigin + rayDir * h;
-    return sdSphere(pnt, objPos, object1[ID].boundRad);
-}
+//TODO
+//float sdRayObject1Bound(kln_point rayOrigin, vec3 rayDir, int ID) 
+//{
+//    kln_point objPos = kln_apply(object1[ID].Pose, rayOrigin);
+//    float h = max(0.0, dot(objPos - rayOrigin, rayDir));  //rayDir must be normalized
+//    vec3 pnt = rayOrigin + rayDir * h;
+//    return sdSphere(pnt, objPos, object1[ID].boundRad);
+//}
 
 //------------------------------------------------------------------
 //---------------------- RENDERING FUNCTIONS -----------------------
@@ -360,37 +360,39 @@ float calcDist(vec3 pnt)
     return d;
 }
 
-vec2 rayMarch(vec3 rayOrigin, vec3 rayDir) 
+
+vec2 RayMarch(kln_point rayOrigin, kln_point rayDir) 
 {
-    
-    for (int i = 0; i<N; i++) 
-    {
-        object1Active[i] = sdRayObject1Bound(rayOrigin, rayDir, i) <= object1[i].boundRad;
-    }
+    kln_point pnt = rayOrigin;
+    float distStep = calcDist(pnt.p3.yzw);
+    float distTotal = distStep;
 
     int stp = 0;
-    float distTot = 0.0, distStp = 0.0;
-    for (;stp<MAX_STEPS && distTot<MAX_DIST && distStp>SURF_DIST; stp++) 
+    for(; stp<MAX_STEPS && !(distTotal>MAX_DIST || distStep<SURF_DIST); stp++) 
     {
-        vec3 pnt = rayOrigin + rayDir*distStp;
-        distStp = calcDist(pnt);
-        distTot += distStp;
+        pnt.p3 = rayOrigin.p3 + rayDir.p3;
+        distStep = calcDist(pnt.p3.yzw);
+        distTotal += distStep;
     }
 
-    return vec2(distTot, stp);
+    return vec2(1,1);
 }
 
 vec2 RayMarch(vec3 ro, vec3 rd) 
 {
 	float dO=0.;
 
-    int i =0;
-    for(; i<MAX_STEPS; i++) 
+    int i =0; 
+    vec3 p = ro + rd*dO;
+    float dS = calcDist(p);
+    dO += dS;
+
+    for(; i<MAX_STEPS && !(dO>MAX_DIST || dS<SURF_DIST); i++) 
     {
     	vec3 p = ro + rd*dO;
-        float dS = calcDist(p);
+        dS = calcDist(p);
         dO += dS;
-        if(dO>MAX_DIST || dS<SURF_DIST) break;
+        //if(dO>MAX_DIST || dS<SURF_DIST) break;
     }
     return vec2(dO, i);
 }
@@ -467,9 +469,10 @@ void main()
     klnRayDir = kln_apply(camPose, klnRayDir);
     vec3 rayDir = normalize(klnRayDir.p3.yzw);
 	//vec3 rayDir = normalize(normalize(camDir.p3.yzw) + normalize(vec3(uv, 1.0)));
-
+    
 
 	vec2 dist_steps = RayMarch(rayOrigin, rayDir);
+    //vec2 dist_steps  = RayMarch(klnRayOrigin, klnRayDir);
 
     if (dist_steps.x < MAX_DIST && dist_steps.y < MAX_STEPS)
     {

@@ -60,7 +60,7 @@ namespace Aves {
 		glBindVertexArray(VAO);
 
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, vertices.size() * 8, &vertices[0], GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
 		//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
 
 		// position attribute
@@ -135,16 +135,7 @@ namespace Aves {
 
 		if (tempCube1)
 		{
-			kln::translator tr(-abs(tempCube1) * 2 / 12, tempCube1, 0, 0);
-
-			//std::cout << "e0123 : " << camera.tempCubeMotor.e0123()
-			//	<< " e01 : " << camera.tempCubeMotor.e01()
-			//	<< " e02 : " << camera.tempCubeMotor.e02()
-			//	<< " e03 : " << camera.tempCubeMotor.e03()
-			//	<< " e12 : " << camera.tempCubeMotor.e12()
-			//	<< " e13 : " << camera.tempCubeMotor.e13()
-			//	<< " e23 : " << camera.tempCubeMotor.e23()
-			//	<< " scalar : " << camera.tempCubeMotor.scalar() << std::endl;
+			kln::translator tr(-0.1*abs(tempCube1), tempCube1, 0, 0);
 
 			tcm = tcm * tr;
 			camera.tempCubeMotor = tcm.inverse();
@@ -153,16 +144,7 @@ namespace Aves {
 		if (tempCube2)
 		{
 
-			kln::rotor rtr(-abs(tempCube2) * 2 / 12, tempCube2, 0, 0);
-
-			//std::cout << "e0123 : " << camera.tempCubeMotor.e0123()
-			//	<< " e01 : " << camera.tempCubeMotor.e01()
-			//	<< " e02 : " << camera.tempCubeMotor.e02()
-			//	<< " e03 : " << camera.tempCubeMotor.e03()
-			//	<< " e12 : " << camera.tempCubeMotor.e12()
-			//	<< " e13 : " << camera.tempCubeMotor.e13()
-			//	<< " e23 : " << camera.tempCubeMotor.e23()
-			//	<< " scalar : " << camera.tempCubeMotor.scalar() << std::endl;
+			kln::rotor rtr(-0.02*abs(tempCube2), 0, tempCube2, 0);
 
 			tcm = tcm * rtr;
 			camera.tempCubeMotor = tcm.inverse();
@@ -225,4 +207,4 @@ namespace Aves {
 		
 		return vertices;
 	}
-}
+} //namespace Aves

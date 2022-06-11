@@ -20,6 +20,7 @@ namespace Aves {
         else
         {
             AVES_WARN("Invalad shader type!");
+            return;
         }
         
         glShaderSource(shaderID, 1, &shaderCodeChar, NULL);
@@ -131,4 +132,4 @@ namespace Aves {
         return ssbo;
     }
 
-};
+} //namespace Aves
