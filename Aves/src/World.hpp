@@ -18,4 +18,4 @@ namespace Aves {
 
 		Cube cube;
 	};
-}
+} //namespace Aves

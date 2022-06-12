@@ -8,7 +8,9 @@
 int main()
 {
 	Aves::Log::Init();
+
 	Aves::World world;
+
 
 
 	while (!world.shouldEnd())

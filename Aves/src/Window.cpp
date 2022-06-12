@@ -60,7 +60,7 @@ namespace Aves {
 		glBindVertexArray(VAO);
 
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, vertices.size() * 8, &vertices[0], GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
 		//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
 
 		// position attribute
@@ -122,25 +122,31 @@ namespace Aves {
 
 		if (e01 || e02 || e03)
 		{
-			kln::translator tr(-sqrt(abs(e01) + abs(e02) + abs(e03)) * 2 / 12, e01, e02, e03);
-
-			camera.cameraPos += tr;
+			kln::translator tr(0.1*sqrt(abs(e01) + abs(e02) + abs(e03)), e01, e02, e03);
+			camera.pose = camera.pose * tr;
+			camera.pose.normalize();
 		}
 		if (yaw || pitch || roll)
 		{
-			kln::rotor rtr(1, yaw, pitch, roll);
-
-			camera.cameraDir.y += rtr.e12();
-			camera.cameraDir.z += rtr.e13();
-			camera.cameraDir.w += rtr.e23();
+			kln::rotor rtr(0.01*sqrt(abs(pitch)+abs(yaw)+abs(roll)), -pitch, yaw, -roll);
+			camera.pose = camera.pose * rtr;
+			camera.pose.normalize();
 		}
 
-		if (tempCube1 || tempCube2)
+		if (tempCube1)
 		{
-			kln::translator tr(-abs(tempCube1) * 2 / 12, tempCube1, 0, 0);
-			kln::rotor rtr(-abs(tempCube2) * 2 / 12, tempCube2, 0, 0);
+			kln::translator tr(-0.1*abs(tempCube1), tempCube1, 0, 0);
 
-			tcm += (tr * rtr);
+			tcm = tcm * tr;
+			camera.tempCubeMotor = tcm.inverse();
+		}
+
+		if (tempCube2)
+		{
+
+			kln::rotor rtr(-0.02*abs(tempCube2), 0, tempCube2, 0);
+
+			tcm = tcm * rtr;
 			camera.tempCubeMotor = tcm.inverse();
 		}
 
@@ -201,4 +207,4 @@ namespace Aves {
 		
 		return vertices;
 	}
-}
+} //namespace Aves
