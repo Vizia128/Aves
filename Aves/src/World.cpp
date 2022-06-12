@@ -18,6 +18,7 @@ namespace Aves {
 		window.processInput();
 
 		cube.step();
+		window.pushCube(cube.getPoseInv());
 
 		window.moveCamera();
 		window.renderWindow();

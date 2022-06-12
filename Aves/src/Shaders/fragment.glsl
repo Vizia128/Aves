@@ -84,6 +84,20 @@ float sdBox(vec4 pnt, kln_motor invPose, vec3 boxDim)
 
 
 //==================================================================
+//-------------- PRIMATIVE SIGNED LIGHTING FUNCTIONS ---------------
+
+
+//------------------------- SPHERE LIGHT ---------------------------
+
+float slSphere(vec4 pnt, vec4 sphereCenter, float radius)
+{
+    return pow(length(pnt.wyz - sphereCenter.wyz) - radius, -2);
+}
+
+//--------------------- IDEAL/INF SPHERE LIGHT ---------------------
+
+
+//==================================================================
 //----------------------------- CAMERA -----------------------------
 
 layout (std140) uniform Camera 
@@ -110,7 +124,7 @@ float calcDist(vec4 pnt)
 {
     float sphereDist = sdSphere(pnt, vec4(1, 1, 1, 6), 1.0);
     float cubeDist = sdBox(pnt, tempCube, vec3(0.5,1.0,1.5));
-    float planeDist = 100000;//pnt.z;
+    float planeDist = pnt.z;
 
     float d = min(sphereDist,min( planeDist, cubeDist));
     return d;
@@ -150,7 +164,7 @@ vec4 calcNormal(vec4 pnt, float h)
 
 vec4 calcLighting(vec4 pnt)
 {
-    vec4 lightPos = vec4(1, 0, 5, 6);
+    vec4 lightPos = vec4(1, 4, 5, 2);
     vec4 lightDir = normalize(lightPos-pnt);
     vec4 normal = calcNormal(pnt, 0.0001);
 
@@ -188,22 +202,20 @@ void main()
     float dist = DS.dist;
     int steps = DS.steps;
 
-    //vec4 color = vec4(atan(DS.dist)/3.1415+0.5,atan(DS.steps)/3.1415+0.5,0, 1.0);
     vec4 color = vec4(1., 0.4, 0.0, 1.0);
 
-
-    if (dist < MAX_DIST && steps < MAX_STEPS)
-    {
-	    vec4 p = rayOrigin + rayDir * steps;
-        color = calcLighting(p);
-    }
-    else if (!(steps < MAX_STEPS))
+    if (steps >= MAX_STEPS)
     {
         color = vec4(0.0, 0.8, 1.0, 1.0);
     }
-    else
+    else if (dist >= MAX_DIST)
     {
         color = vec4(0.8, 0.1, 0.5, 1.0);
+    }
+    else
+    {
+	    vec4 p = rayOrigin + rayDir * dist;
+        color = calcLighting(p);
     }
     
     color = pow(color, vec4(.4545));	// gamma correction

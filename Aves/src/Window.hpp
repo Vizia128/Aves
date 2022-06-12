@@ -25,6 +25,8 @@ namespace Aves {
 		void processInput();
 
 		void moveCamera();
+
+		void pushCube(kln::motor invPose);
 		
 		bool windowShouldClose() {
 			return glfwWindowShouldClose(window);
