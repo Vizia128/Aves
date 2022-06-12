@@ -160,6 +160,11 @@ namespace Aves {
 		camera.time = float(fmod(tempTime, 12 * 3.14159265358979323846));
 	}
 
+	void Window::pushCube(kln::motor invPose)
+	{
+		camera.tempCubeMotor = invPose;
+	}
+
 
 	std::vector <float> Window::getVertices()
 	{

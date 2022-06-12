@@ -10,9 +10,9 @@ namespace Aves {
 		~World();
 
 		void run();
-
 		
 		bool shouldEnd() { return window.windowShouldClose(); }
+
 	private:
 		Window window;
 
