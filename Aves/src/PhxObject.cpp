@@ -1,22 +1,22 @@
-#include "Cube.hpp"
+#include "PhxObject.hpp"
 #include <iostream>
 
 namespace Aves {
 
-	Cube::Cube()
+	PhxObject::PhxObject()
 		: pose(kln::motor(-1, 0, 0, 0, 0, 1, 3, -2)), rate(kln::line(0,0,0,0.1,0.001,0)), inertia(kln::line(2, 1, 3, 1, 1, 1))
 	{}
 
-	Cube::Cube(kln::motor pose, kln::line rate, kln::line inertia)
+	PhxObject::PhxObject(kln::motor pose, kln::line rate, kln::line inertia)
 		: pose(pose), rate(rate), inertia(inertia)
 	{}
 
-	void Cube::step()
+	void PhxObject::step()
 	{
 		eulerIntegrationStep(100, 0.1);
 	}
 
-	kln::line Cube::inertiaMap()
+	kln::line PhxObject::inertiaMap()
 	{
 		kln::line rateDual = !rate;
 		float temp[6];
@@ -31,7 +31,7 @@ namespace Aves {
 		return kln::line(temp[0], temp[1], temp[2], temp[3], temp[4], temp[5]);		
 	}
 
-	kln::line Cube::inertiaMapInv(kln::line momentum)
+	kln::line PhxObject::inertiaMapInv(kln::line momentum)
 	{
 		float temp[6];
 
@@ -57,7 +57,7 @@ namespace Aves {
 		return ! kln::line(temp[0], temp[1], temp[2], temp[3], temp[4], temp[5]);
 	}
 
-	kln::line Cube::commutate(kln::line line1, kln::line line2)
+	kln::line PhxObject::commutate(kln::line line1, kln::line line2)
 	{
 		kln::motor lineM = line1 * line2 - line2 * line1;
 
@@ -68,7 +68,7 @@ namespace Aves {
 		return line;
 	}
 
-	kln::motor Cube::deltaPose()
+	kln::motor PhxObject::deltaPose()
 	{
 		// deltaPose = -1/2 * Pose * Rate
 		kln::motor rateMotor;
@@ -78,7 +78,7 @@ namespace Aves {
 		return pose * rateMotor / (-2);
 	}
 
-	kln::line Cube::deltaRate()
+	kln::line PhxObject::deltaRate()
 	{
 		// deltaRate = I^(-1)[ Forques + Rate x I[Rate] ] = I^(_1)[ Forques + 1/2 * (Rate * I[Rate] - I[Rate] * Rate)]
 
@@ -88,13 +88,14 @@ namespace Aves {
 		return inertiaMapInv(forques + commutate(rate, Irate) / 2);
 	}
 
-	void Cube::eulerIntegrationStep(int numSteps, float deltaTime)
+	void PhxObject::eulerIntegrationStep(int numSteps, float deltaTime)
 	{
 		for (int i = 0; i < numSteps; i++)
 		{
 			rate += deltaRate() * deltaTime / numSteps;
 			pose += deltaPose() * deltaTime / numSteps;
 		}
+		pose.normalize();
 	}
 
 }

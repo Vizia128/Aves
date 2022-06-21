@@ -1,0 +1,69 @@
+{
+  "defines": {
+    "INPUT TYPES": {
+      "KEYBOARD": 0,
+      "MOUSE_BUTTON": 1,
+      "MOUSE_AXIS": 2,
+      "JOY_BUTTON": 3,
+      "JOY_AXIS": 4
+    },
+
+    "AXES": {
+      "CAMERA_X": 0,
+      "CAMERA_Y": 2,
+      "CAMERA_Z": 3,
+      "CAMERA_XY": 4,
+      "CAMERA_XZ": 5,
+      "CAMERA_YZ": 6,
+      "ROLL": 7,
+      "PITCH": 8,
+      "YAW": 9
+    },
+
+    "BUTTONS": {
+      "SHOOT": 0
+    }
+  },
+  "inputs": [
+    {
+      "controlType": "ROLL",
+      "InputType": "JOY_AXIS",
+      "deviceName": " VKB-Sim Gladiator NXT R  ",
+      "keyIndex": 0,
+      "inverted": false,
+      "curve": 1.0
+    },
+    {
+      "controlType": "PITCH",
+      "InputType": "JOY_AXIS",
+      "deviceName": " VKB-Sim Gladiator NXT R  ",
+      "keyIndex": 1,
+      "inverted": false,
+      "curve": 1.0
+    },
+    {
+      "controlType": "YAW",
+      "InputType": "JOY_AXIS",
+      "deviceName": "Saitek Pro Flight Rudder Pedals",
+      "keyIndex": 2,
+      "inverted": false,
+      "curve": 1.0
+    },
+    {
+      "controlType": "THRUST",
+      "InputType": "JOY_AXIS",
+      "deviceName": "CH PRO THROTTLE USB",
+      "keyIndex": 2,
+      "inverted": false,
+      "curve": 1.0
+    },
+    {
+      "controlType": "SHOOT",
+      "InputType": "JOY_BUTTON",
+      "deviceName": " VKB-Sim Gladiator NXT R  ",
+      "keyIndex": 0,
+      "inverted": false,
+      "curve": 1.0
+    }
+  ]
+}

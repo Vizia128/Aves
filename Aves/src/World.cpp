@@ -3,7 +3,7 @@
 
 namespace Aves {
 	World::World()
-		:cube(Cube())
+		:window(Window()), playerInput(PlayerInput(window.window)), cube(PhxObject())
 	{
 
 	}

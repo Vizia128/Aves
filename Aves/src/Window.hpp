@@ -32,6 +32,9 @@ namespace Aves {
 			return glfwWindowShouldClose(window);
 		}
 
+	public:
+		GLFWwindow* window;
+
 	private:
 		std::vector <float> getVertices();
 
@@ -43,7 +46,7 @@ namespace Aves {
 		unsigned int numVertices;
 		bool isFullscreen;
 
-		GLFWwindow* window;
+		
 		Shader renderShader;
 
 		unsigned int VBO, VAO;

@@ -33,7 +33,10 @@
     <ClCompile Include="src\Renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Cube.cpp">
+    <ClCompile Include="src\PhxObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PlayerInput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="vendor\glad\src\glad.c">
@@ -56,12 +59,16 @@
     <ClInclude Include="src\Renderer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Cube.hpp">
+    <ClInclude Include="src\PhxObject.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PlayerInput.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\Shaders\fragment.glsl" />
-    <None Include="src\Shaders\vertex.glsl" />
+    <None Include="src\Config\playerInput.json" />
+    <None Include="src\test.json" />
+    <None Include="src\Config\playerInputDefault.json" />
   </ItemGroup>
 </Project>

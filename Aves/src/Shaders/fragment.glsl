@@ -70,7 +70,7 @@ vec4 kln_apply(in kln_motor m, in vec4 p)
 
 float sdSphere(vec4 pnt, vec4 sphereCenter, float radius)
 {
-    return length(pnt.wyz - sphereCenter.wyz) - radius;
+    return length(pnt.yzw - sphereCenter.yzw) - radius;
 }
 
 
@@ -78,7 +78,7 @@ float sdSphere(vec4 pnt, vec4 sphereCenter, float radius)
 
 float sdBox(vec4 pnt, kln_motor invPose, vec3 boxDim)
 {
-    vec3 q = abs(kln_apply(invPose, pnt)).wyz - boxDim;
+    vec3 q = abs(kln_apply(invPose, pnt)).yzw - boxDim;
     return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
 }
 
@@ -123,7 +123,7 @@ struct distSteps
 float calcDist(vec4 pnt)
 {
     float sphereDist = sdSphere(pnt, vec4(1, 1, 1, 6), 1.0);
-    float cubeDist = sdBox(pnt, tempCube, vec3(0.5,1.0,1.5));
+    float cubeDist = sdBox(pnt, tempCube, vec3(1.0,1.5,0.5));
     float planeDist = pnt.z;
 
     float d = min(sphereDist,min( planeDist, cubeDist));

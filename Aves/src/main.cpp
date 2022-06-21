@@ -1,8 +1,16 @@
 #include <iostream>
+#include <istream>
+
 #include <spdlog/spdlog.h>
+
 
 #include "Log.hpp"
 #include "World.hpp"
+
+
+
+#include <stdlib.h>
+#include <windows.h>
 
 
 int main()
@@ -13,8 +21,10 @@ int main()
 
 
 
+
 	while (!world.shouldEnd())
 	{
 		world.run();
 	}
+
 }

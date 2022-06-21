@@ -3,14 +3,17 @@
 //#include <glm/glm.hpp>
 #include "klein/klein.hpp"
 
+//#include "physics.hpp"
+//#include "camera.hpp"
+
 namespace Aves {
 
-	class Cube {
+	class PhxObject {
 
 	public:
-		Cube();
-		Cube(kln::motor pose, kln::line rate, kln::line inertia);
-		~Cube() {}
+		PhxObject();
+		PhxObject(kln::motor pose, kln::line rate, kln::line inertia);
+		~PhxObject() {}
 
 		void step();
 
@@ -18,7 +21,7 @@ namespace Aves {
 		kln::motor getPoseInv() { return pose.inverse(); }
 		kln::line getRate() { return rate; }
 
-	private:
+	protected:
 
 		kln::motor pose;	// position and orientation or motion
 
@@ -49,4 +52,13 @@ namespace Aves {
 		kln::line meet = kln::plane(1, 1, 1, 1) ^ kln::plane(1, 2, 3, 4);
 
 	};
-}
+
+	class Ship : public PhxObject {
+
+	};
+
+	class Projectile : public PhxObject {
+
+	};
+
+} //namespace Aves

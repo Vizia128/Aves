@@ -1,6 +1,7 @@
 #pragma once
 #include "Window.hpp"
-#include "Cube.hpp"
+#include "PlayerInput.hpp"
+#include "Ship.hpp"
 
 namespace Aves {
 	class World
@@ -15,7 +16,7 @@ namespace Aves {
 
 	private:
 		Window window;
-
-		Cube cube;
+		PlayerInput playerInput;
+		PhxObject cube;
 	};
 } //namespace Aves

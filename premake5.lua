@@ -21,7 +21,8 @@ project "Aves"
         "Aves/vendor/glm-master",
         "Aves/vendor/glad/include",
         "Aves/vendor/glfw_precompiled/include",
-        "Aves/vendor/Klein/public"
+        "Aves/vendor/Klein/public",
+        "Aves/vendor/json/include"
     }
 
     libdirs

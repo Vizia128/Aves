@@ -120,6 +120,20 @@ namespace Aves {
 		float tempCube1 = userKeyPress[int('U')] - userKeyPress[int('I')];
 		float tempCube2 = userKeyPress[int('J')] - userKeyPress[int('K')];
 
+		int throttleCount;
+		const float* throttle = glfwGetJoystickAxes(0, &throttleCount);
+		e03 = pow(-throttle[2], 3);
+
+		int stickCount;
+		const float* stick = glfwGetJoystickAxes(1, &throttleCount);
+		roll = pow(-stick[0], 3);
+		pitch = pow(-stick[1], 3);
+
+		int peddalCount;
+		const float* peddal = glfwGetJoystickAxes(2, &throttleCount);
+		yaw = pow(-peddal[2], 3);
+
+
 		if (e01 || e02 || e03)
 		{
 			kln::translator tr(0.1*sqrt(abs(e01) + abs(e02) + abs(e03)), e01, e02, e03);
